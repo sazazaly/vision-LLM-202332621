@@ -4,9 +4,9 @@
 - 학생 5명의 이름과 3과목 성적 데이터를 분석
 
 ## 실행 방법
-1. VS Code에서 `section_project.ipynb`를 열기
-2. 커널 `.venv` 선택
-3. 위에서부터 차례로 실행 (Run All)
+1. VS Code에서 `assignment01.py`를 열기
+2. 터미널에서 가상 환경 `.venv`를 활성
+3. `python 2026-10-10/assignment01.py`를 실행
 
 ## 패키지
 - Python 3.13
@@ -14,4 +14,4 @@
 
 ## 추가 사항
 - 실행 환경: macOS, VS Code, 가상 환경 `.venv`
-- TODO 셀 제외 가져온 셀: np_arr
+- NumPy 연습 문제(정규화, float32)도 같은 파일에 포함
