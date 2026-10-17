@@ -24,5 +24,5 @@ pip install opencv-python numpy matplotlib
 ```
 
 ## 참고 사항
-- 이미지는 `src/images` 폴더에서 불러옴. 이 폴더는 `2026-10-17` 폴더와 같은 위치에 있어야 함 (코드에서는 `../src/images`로 찾음)
+- 이미지는 `src/images` 폴더에서 불러옴. (코드에서는 `../src/images`로 찾음)
 - 실행에 필요한 앞 코드를 앞부분에 넣음
