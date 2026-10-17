@@ -1,13 +1,12 @@
 import os
-
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 이 파일 위치 기준으로 src/images 폴더를 찾습니다 (../src/images)
+# src찾기
 image_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "images")
 
-# ===== 앞 준비: 농구공 이미지 불러오기 + LAB CLAHE 마스크 (과제 셀을 실행하기 위해 필요) =====
+# ===== 앞 준비: 농구공 이미지 불러오기 + LAB CLAHE 마스크 (TODO셀 실행하기 위해) =====
 lower_basketball_lab = np.array([70, 130, 70])
 upper_basketball_lab = np.array([180, 230, 185])
 
