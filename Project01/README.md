@@ -10,8 +10,6 @@
 ```
 Project01/
 ├── target_game.py
-├── models/
-│   └── hand_landmarker.task
 └── README.md
 ```
 - `target_game.py`: 실행 파일 (공 검출, 과녁 게임, 손 인식이 모두 들어 있음)
