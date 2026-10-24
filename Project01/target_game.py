@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 import random
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
 
 pipeline = (
     "v4l2src device=/dev/video0 ! "
@@ -22,6 +25,14 @@ target_center_x = 320  # 과녁 중심의 가로 위치
 target_center_y = 240  # 과녁 중심의 세로 위치
 target_radius = 40     # 과녁 원의 반지름
 score = 0              # 점수 (처음엔 0점)
+
+# 손 인식 설정 (강사님 코드)
+base_option = python.BaseOptions(model_asset_path="src/models/MediaPipe/hand_landmarker.task")  # 모델 경로 지정하는 옵션
+options = vision.HandLandmarkerOptions(base_options=base_option, num_hands=2)                   # 모델 경로와 최대 손 개수 지정
+hand_detector = vision.HandLandmarker.create_from_options(options)                              # 해당 옵션으로 손 검출하는 객체 생성
+connections = vision.HandLandmarksConnections.HAND_CONNECTIONS                                  # 각 landmark를 잇는 연결선 정보
+finger_tips = (4, 8, 12, 16, 20) 
+
 
 # 카메라 연결: 젯슨에서는 첫 번째 줄, 맥북에서는 두 번째 줄을 사용
 cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
@@ -71,6 +82,20 @@ while True:
             target_center_x = random.randint(target_radius, frame_width - target_radius)
             target_center_y = random.randint(target_radius, frame_height - target_radius)
 
+    # 탐지 결과의 각 손마다 선과 점 그리기 (강사님 코드)
+    for hand in result.hand_landmarks:
+        h, w = frame.shape[:2]  # 프레임 높이와 너비
+        points = [(int(p.x * w), int(p.y * h)) for p in hand]  # 프레임 높이와 너비 길이 기준 각 landmark 좌표
+
+        # landmark를 연결하는 선 (skeleton) 그리기
+        for c in connections:
+            cv2.line(frame, points[c.start], points[c.end], (0,255,0), 2)
+
+        # 각 관절 (landmark)에 점 그리기 (손가락 끝은 빨간 점, 그 외에는 파란 점)
+        for i, point in enumerate(points):
+            color = (0,0,255) if i in finger_tips else (255,0,0)
+            cv2.circle(frame, point, 6 if i in finger_tips else 4, color, -1)
+
     # 과녁을 원으로 그림 (색은 target_color)
     cv2.circle(frame, (target_center_x, target_center_y), target_radius, target_color, 3)
 
@@ -79,5 +104,6 @@ while True:
 
     cv2.imshow("Target Game", frame)
 
+hand_detector.close()
 cap.release()
 cv2.destroyAllWindows()
