@@ -13,7 +13,6 @@ Project01/
 └── README.md
 ```
 - `target_game.py`: 실행 파일 (공 검출, 과녁 게임, 손 인식이 모두 들어 있음)
-- `models/hand_landmarker.task`: MediaPipe 손 인식 모델 파일
 
 ## 실행 방식 (필수)
 1. 젯슨에서 가상환경(.venv)을 켠 상태로 `Project01` 폴더가 있는 위치로 이동함
