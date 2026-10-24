@@ -49,6 +49,10 @@ while True:
     # 지금 카메라 화면의 세로, 가로 크기를 읽어옴
     frame_height, frame_width = frame.shape[:2]
 
+    # 프레임 내 손 탐지 (강사님 코드, 좌우 반전은 뺌)
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    result = hand_detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb))
+
     # 초록색 공 검출
     frame_blur = cv2.GaussianBlur(frame, (7, 7), 0)
     frame_lab = cv2.cvtColor(frame_blur, cv2.COLOR_BGR2LAB)
