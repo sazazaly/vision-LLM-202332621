@@ -37,6 +37,9 @@ finger_tips = (4, 8, 12, 16, 20)
 cap = cv2.VideoCapture(0)
 # cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 
+cv2.namedWindow("Target Game", cv2.WINDOW_NORMAL)  # 크기를 바꿀 수 있는 창으로 만듦
+cv2.resizeWindow("Target Game", 640, 480)  
+
 while True:
     ret, frame = cap.read()
 
