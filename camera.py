@@ -25,13 +25,3 @@ cap.release()
 cv2.destroyAllWindows()
 
 
- pipeline = (
-     "nvarguscamerasrc sensor-id=0 ! "
-     "video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1 ! "
-     "nvvidconv ! "
-     "video/x-raw, format=BGRx ! "
-     "videoconvert ! "
-     "video/x-raw, format=BGR ! "
-     "queue leaky=downstream max-size-buffers=1 ! "
-     "appsink drop=true max-buffers=1 sync=false"
- )
