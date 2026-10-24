@@ -20,25 +20,26 @@ green_upper = np.array([230, 115, 180], dtype=np.uint8)
 
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
-# 과녁 (설정 2단계)
-target_center_x = 320  # 과녁 중심의 가로 위치 (화면 가로 640의 가운데)
-target_center_y = 240  # 과녁 중심의 세로 위치 (화면 세로 480의 가운데)
+# 과녁 설정
+target_center_x = 320  # 과녁 중심의 가로 위치
+target_center_y = 240  # 과녁 중심의 세로 위치
 target_radius = 40     # 과녁 원의 반지름
-score = 0  # 점수 (처음엔 0점)
+score = 0              # 점수 (처음엔 0점)
 
-# 손 인식 설정 (강사님 코드)
-base_option = python.BaseOptions(model_asset_path="src/models/MediaPipe/hand_landmarker.task")  # 모델 경로 지정하는 옵션
-options = vision.HandLandmarkerOptions(base_options=base_option, num_hands=2)                   # 모델 경로와 최대 손 개수 지정
-hand_detector = vision.HandLandmarker.create_from_options(options)                              # 해당 옵션으로 손 검출하는 객체 생성
-connections = vision.HandLandmarksConnections.HAND_CONNECTIONS                                  # 각 landmark를 잇는 연결선 정보
-finger_tips = (4, 8, 12, 16, 20) 
+# 손 인식 설정 (교수님 코드)
+base_option = python.BaseOptions(model_asset_path="src/models/MediaPipe/hand_landmarker.task")
+options = vision.HandLandmarkerOptions(base_options=base_option, num_hands=2)
+hand_detector = vision.HandLandmarker.create_from_options(options)
+connections = vision.HandLandmarksConnections.HAND_CONNECTIONS
+finger_tips = (4, 8, 12, 16, 20)
 
-# 카메라 연결: 맥북에서는 첫 번째 줄, 젯슨에서는 두 번째 줄을 사용
-cap = cv2.VideoCapture(0)
-# cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+# 카메라 연결: 젯슨에서는 첫 번째 줄, 맥북에서는 두 번째 줄을 사용
+cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+# cap = cv2.VideoCapture(0)
 
-cv2.namedWindow("Target Game", cv2.WINDOW_NORMAL)  # 크기를 바꿀 수 있는 창으로 만듦
-cv2.resizeWindow("Target Game", 640, 480)  
+# 창 크기를 640 x 480으로 맞춤
+cv2.namedWindow("Target Game", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("Target Game", 640, 480)
 
 while True:
     ret, frame = cap.read()
@@ -51,7 +52,7 @@ while True:
     # 지금 카메라 화면의 세로, 가로 크기를 읽어옴
     frame_height, frame_width = frame.shape[:2]
 
-     # 프레임 내 손 탐지 (강사님 코드, 좌우 반전은 뺌)
+    # 프레임 내 손 탐지 (교수님 코드, 좌우 반전은 뺌)
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = hand_detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb))
 
@@ -62,8 +63,8 @@ while True:
     green_mask_opened = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
     contours, _ = cv2.findContours(green_mask_opened, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # 과녁 색: 기본은 보라색 
-    target_color = (255, 0, 255) 
+    # 과녁 색: 기본은 보라색
+    target_color = (255, 0, 255)
 
     # 손이 공을 만졌는지 (처음엔 안 만진 상태)
     hand_touching_ball = False
@@ -77,26 +78,17 @@ while True:
         cv2.circle(frame, ball_center, int(ball_radius), (0, 255, 255), 3)
         cv2.circle(frame, ball_center, 5, (0, 0, 255), -1)
 
-        # 공 중심과 과녁 중심 사이의 거리 (3단계)
+        # 공 중심과 과녁 중심 사이의 거리
         horizontal_difference = ball_x - target_center_x
         vertical_difference = ball_y - target_center_y
         distance_to_target = (horizontal_difference ** 2 + vertical_difference ** 2) ** 0.5
 
-        # 두 원의 반지름을 더한 값보다 거리가 작으면 = 두 원이 닿음 (3단계)
-        if distance_to_target < target_radius + ball_radius:
-            target_color = (0, 0, 255)  # 빨간색
-            score = score + 1  # 닿았으니 1점 추가
-
-            # 닿으면 과녁을 화면 안의 새로운 랜덤 위치로 옮김
-            target_center_x = random.randint(target_radius, frame_width - target_radius)
-            target_center_y = random.randint(target_radius, frame_height - target_radius)
-
-    # 탐지 결과의 각 손마다 선과 점 그리기 (강사님 코드)
+    # 탐지 결과의 각 손마다 선과 점 그리기 (교수님 코드)
     for hand in result.hand_landmarks:
-        h, w = frame.shape[:2]  # 프레임 높이와 너비
-        points = [(int(p.x * w), int(p.y * h)) for p in hand]  # 프레임 높이와 너비 길이 기준 각 landmark 좌표
+        h, w = frame.shape[:2]
+        points = [(int(p.x * w), int(p.y * h)) for p in hand]
 
-                # 손 관절 점이 공의 원 안에 들어오면 = 손이 공을 만진 것
+        # 손 관절 점이 공의 원 안에 들어오면 = 손이 공을 만진 것
         if len(contours) > 0:
             for point in points:
                 horizontal_difference_to_ball = point[0] - ball_x
@@ -114,7 +106,18 @@ while True:
             color = (0,0,255) if i in finger_tips else (255,0,0)
             cv2.circle(frame, point, 6 if i in finger_tips else 4, color, -1)
 
-    # 과녁을 보라색 원으로 그림 (2단계)
+    # 손이 공을 잡고 있고, 공이 과녁에 닿았을 때만 점수
+    if len(contours) > 0 and hand_touching_ball:
+        # 두 원의 반지름을 더한 값보다 거리가 작으면 = 두 원이 닿음
+        if distance_to_target < target_radius + ball_radius:
+            target_color = (0, 0, 255)  # 빨간색
+            score = score + 1  # 닿았으니 1점 추가
+
+            # 닿으면 과녁을 화면 안의 새로운 랜덤 위치로 옮김
+            target_center_x = random.randint(target_radius, frame_width - target_radius)
+            target_center_y = random.randint(target_radius, frame_height - target_radius)
+
+    # 과녁을 원으로 그림 (색은 target_color)
     cv2.circle(frame, (target_center_x, target_center_y), target_radius, target_color, 3)
 
     # 점수를 화면 왼쪽 위에 글자로 씀
@@ -123,7 +126,7 @@ while True:
     # 손이 공을 만졌으면 글자로 알려줌
     if hand_touching_ball:
         cv2.putText(frame, "HAND TOUCH BALL", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        
+
     cv2.imshow("Target Game", frame)
 
 hand_detector.close()
