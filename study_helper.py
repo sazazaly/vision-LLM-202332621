@@ -4,7 +4,6 @@
 import cv2
 import time
 import subprocess
-import threading
 
 from ultralytics import YOLO
 from llama_cpp import Llama
@@ -125,72 +124,6 @@ llm = Llama(
     verbose=False,
 )
 
-# 오래 걸리는 일은 따로 실행해서 카메라 화면이 멈추지 않게 함
-# is_busy가 True인 동안에는 새 경고나 새 질문을 시작하지 않음 (마이크, 스피커를 같이 쓰지 않으려고)
-is_busy = False
-
-
-def speak_warning():
-    global is_busy
-
-    try:
-        text_to_speech("핸드폰 치우고 집중하세요")
-    finally:
-        is_busy = False
-
-
-def answer_question(warning_count, phone_visible):
-    global is_busy
-
-    try:
-        print("질문을 말씀해 주세요.")
-        question = speech_to_text()
-        print("[질문]", question)
-
-        if question == "":
-            print("음성이 인식되지 않았습니다.")
-            return
-
-        study_seconds = time.time() - start_time
-        vision_text = study_record_to_text(study_seconds, warning_count, phone_visible)
-
-        response = llm.create_chat_completion(
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"""
-                                Instruction:
-                                주어진 공부 기록을 바탕으로 사용자의 질문에 답하시오.
-
-                                Context:
-                                {vision_text}
-
-                                Constraint:
-                                공부 기록에 없는 내용을 지어내지 마시오.
-
-                                Output Format:
-                                한국어 두 문장 이내.
-                               """
-                },
-                {
-                    "role": "user",
-                    "content": question,
-                }
-            ],
-            max_tokens=MAX_TOKENS,
-            temperature=0.7,
-        )
-
-        answer = response["choices"][0]["message"]["content"].strip()
-
-        print("\n[Gemma]")
-        print(answer)
-
-        text_to_speech(answer)
-    finally:
-        is_busy = False
-
-
 # 카메라 파이프라인 (내가 쓰던 GStreamer 코드 그대로)
 pipeline = (
     "v4l2src device=/dev/video0 ! "
@@ -255,24 +188,62 @@ while True:
 
         phone_seen_seconds = current_time - phone_start_time
 
-        if phone_seen_seconds >= PHONE_SECONDS and not is_busy:
+        if phone_seen_seconds >= PHONE_SECONDS:
             warning_count = warning_count + 1
             phone_start_time = None
 
             print("[경고] 핸드폰 치우고 집중하세요")
-            is_busy = True
-            threading.Thread(target=speak_warning).start()
+            text_to_speech("핸드폰 치우고 집중하세요")
     else:
         phone_start_time = None
 
 
-    # 4. l 키를 누르면 음성 질문 -> Gemma -> 음성 대답 (따로 실행해서 화면이 멈추지 않음)
-    if key == ord("l") and not is_busy:
-        is_busy = True
-        threading.Thread(
-            target=answer_question,
-            args=(warning_count, phone_visible),
-        ).start()
+    # 4. l 키를 누르면 음성 질문 -> Gemma -> 음성 대답
+    if key == ord("l"):
+        print("질문을 말씀해 주세요.")
+        question = speech_to_text()
+        print("[질문]", question)
+
+        if question == "":
+            print("음성이 인식되지 않았습니다.")
+            continue
+
+        study_seconds = time.time() - start_time
+        vision_text = study_record_to_text(study_seconds, warning_count, phone_visible)
+
+        response = llm.create_chat_completion(
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""
+                                Instruction:
+                                주어진 공부 기록을 바탕으로 사용자의 질문에 답하시오.
+
+                                Context:
+                                {vision_text}
+
+                                Constraint:
+                                공부 기록에 없는 내용을 지어내지 마시오.
+
+                                Output Format:
+                                한국어 두 문장 이내.
+                               """
+                },
+                {
+                    "role": "user",
+                    "content": question,
+                }
+            ],
+            max_tokens=MAX_TOKENS,
+            temperature=0.7,
+        )
+
+        answer = response["choices"][0]["message"]["content"].strip()
+
+        print("\n[Gemma]")
+        print(answer)
+
+        text_to_speech(answer)
 
 
 cap.release()
