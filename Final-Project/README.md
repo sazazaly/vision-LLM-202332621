@@ -39,7 +39,7 @@ python study_helper.py
 ## 어디서 가져왔는지
 - 노트북 6번에서 가져옴: 경로 설정, `speech_to_text`, `text_to_speech`, YOLO와 Llama 불러오기, 반복문 뼈대, Gemma 프롬프트 틀 (Instruction, Context, Constraint, Output Format)
 - 내 GStreamer 카메라 코드 그대로 사용
-- 직접 쓴 부분
+- ai랑 같이 한 부분
   - 핸드폰 기준 (`PHONE_CLASS_ID`, `PHONE_SECONDS`)
   - `study_record_to_text` (노트북 6번 A의 `detections_to_text`와 같은 방식)
   - 10초 판단과 경고 횟수 세기
@@ -50,3 +50,4 @@ python study_helper.py
 - 공부 시간은 프로그램을 켠 뒤부터 지난 시간임 (쉬는 시간은 따로 빼지 않음)
 - 질문을 녹음하고 대답하는 동안 카메라 화면이 잠깐 멈춤
 - 다음에 할 것: `s` 키로 쉬는 시간 빼기
+- 음성 인식이 잘 안됨 / 예를 들어 "나 공부 얼나 했니"라고 물어보면 "댄스"로 인식할 경우가 발생 -> 그래도 대답을 하긴 함
